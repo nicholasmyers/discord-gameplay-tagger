@@ -2,7 +2,7 @@
   "name": "gameplay-tagger",
   "version": "1.0.0",
   "description": "This app is a Node.JS Discord bot that retrieves game information from a source system, and through a series of API calls, determines user game ownership of discord server members. It generates a temporary tag list of those users to make finding players easier.",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

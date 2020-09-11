@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Our secure API token / bot login information
+config.json

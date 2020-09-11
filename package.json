@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/nicholasmyers/discord-gameplay-tagger#readme",
   "dependencies": {
-    "discord.js": "^12.3.1"
+    "discord.js": "^12.3.1",
+    "jsonata": "^1.8.3",
+    "node-fetch": "^2.6.1"
   }
 }

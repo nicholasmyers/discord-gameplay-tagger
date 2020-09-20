@@ -34,11 +34,15 @@ client.on('message', message => {
             break;
 
         case "who-owns":
-            
+            getOwnership(message.guild, 1);
+            break;
+
+        case "ping":
+            message.channel.send(`pong!`);
             break;
 
         default: 
-            message.channel.send(`"${command}" is not recognized... sorry! Try "${prefix}help" to see what I can do! `)
+            message.channel.send(`"${command}" is not recognized... sorry! Try "${prefix}help" to see what I can do!`);
             break;
     }
 });
@@ -59,16 +63,19 @@ function determineSteamGame(args) {
     //make our initial call to grab all games
     //TODO: Create an affinity/cache list (e.g. previously-confirmed games to make this lookup faster or auto-complete)
     fetch("http://api.steampowered.com/ISteamApps/GetAppList/v2/")
-        .then(checkRESTStatus)
-        .then(res => res.json())
-        .then(json => {
+     .then(checkRESTStatus)
+     .then(res => res.json())
+     .then(json => {
 
-            //with our successful response, parse out the data and query with our keyword strings
-            //TODO: use our arguments to pull out matching games, determine relevance
-            var expression = jsonata("");
-            var result = expression.evaluate(json);
-            console.log(result);
-        });
+        //with our successful response, parse out the data and query with our keyword strings
+        //TODO: use our arguments to pull out matching games, determine relevance
+        //var expression = jsonata("");
+        //var result = expression.evaluate(json);
+        //console.log(result);
+     })
+     .catch(error => {
+        console.log(error);
+    });
 }
 
 /* 
@@ -80,8 +87,84 @@ function determineSteamGame(args) {
     OUTPUT-SUCCESS: [int[]]: a list of discord user-uuids who own the game-id
     OUTPUT-FAILURE: [int]: -1
 */
-function getOwnership(gameID) {
+function getOwnership(guild, gameID) {
 
+    //check input for a valid parameter
+    if(!gameID || !guild || isNaN(parseInt(gameID))) {
+        return -1;
+    }
+
+    //loop through each discord group member, given they have an open steam account integration
+    //this array will store discord IDs for players who will be tagged (since they have the game)
+    var owners = [];
+    let serverMembers = new Set();
+
+    guild.members.fetch()
+     .then(function(result) {
+         //return type of this promise is a Map, so loop through users and just grab their ID
+         /*
+            Collection [Map] {
+            '137720507016544256' => GuildMember {        
+                guild: Guild {
+                members: [GuildMemberManager],
+                channels: [GuildChannelManager],
+                roles: [RoleManager],
+                presences: [PresenceManager],
+                voiceStates: [VoiceStateManager],        
+                deleted: false,
+                available: true,
+                id: '754042412908937259',
+                shardID: 0,
+                name: 'The Sickle Nickle Dickle',        
+                icon: 'f8b077fb8facd90ac47e99d5ad82e222',
+                splash: null,
+                discoverySplash: null,
+                region: 'us-west',
+                memberCount: 2,
+                large: false,
+                features: [],
+                applicationID: null,
+                afkTimeout: 300,
+                afkChannelID: null,
+                systemChannelID: '754042413655392259',
+                embedEnabled: undefined,
+                premiumTier: 0,
+                premiumSubscriptionCount: 0,
+                verificationLevel: 'NONE',
+                explicitContentFilter: 'DISABLED',
+                mfaLevel: 0,
+                joinedTimestamp: 1599852176080,
+                defaultMessageNotifications: 'ALL',
+                systemChannelFlags: [SystemChannelFlags],
+                maximumMembers: 100000,
+                vanityURLCode: null,
+                vanityURLUses: null,
+                description: null,
+                banner: null,
+                rulesChannelID: null,
+                publicUpdatesChannelID: null,
+                preferredLocale: 'en-US',
+                ownerID: '137720507016544256',
+                emojis: [GuildEmojiManager]
+                }
+            }
+         */
+
+        for(const [key, value] of result) {
+            if(!value.user.bot) //validate the user is not a bot. Bots can't play games with you
+                serverMembers.add(key);
+        }
+
+        console.log(serverMembers);
+
+        //now that we have the users from the Guild, lets get their Steam IDs
+        //TODO: Build Steam-DiscordID user affinity list to make this list quicker in subsequent calls
+        if(serverMembers.size > 0) {
+
+        }
+
+     })
+     .catch(console.error);
 }
 
 /* 
@@ -119,6 +202,6 @@ function checkRESTStatus(res) {
     if (res.ok) { // res.status >= 200 && res.status < 300
         return res;
     } else {
-        throw IntegrationException(`Failed to retrieve data: ${res.statusText}`);
+        throw new IntegrationException(`Failed to retrieve data: ${res.statusText}`);
     }
 }
